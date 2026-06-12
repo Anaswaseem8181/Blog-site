@@ -24,3 +24,6 @@ dist-ssr
 *.sw?
 flow.txt
 package-lock.json
+
+# Ignore local env
+.env
