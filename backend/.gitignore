@@ -1,0 +1,4 @@
+.env
+node_modules
+flow.txt
+package-lock.json
