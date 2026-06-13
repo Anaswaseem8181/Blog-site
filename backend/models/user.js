@@ -1,31 +1,45 @@
-"use strict";
-const { Model } = require("sequelize");
+const bcrypt = require("bcryptjs");
 
 module.exports = (sequelize, DataTypes) => {
-  class User extends Model {
-    static associate(models) {
-      User.hasMany(models.Post, {
-        foreignKey: "userId",
-      });
-
-      User.hasMany(models.Comment, {
-        foreignKey: "userId",
-      });
-
-    }
-  }
-
-  User.init(
+  const User = sequelize.define(
+    "User",
     {
-      username: DataTypes.STRING,
-      email: DataTypes.STRING,
-      password: DataTypes.STRING,
+      username: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+
+      email: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true,
+      },
+
+      password: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
     },
     {
-      sequelize,
-      modelName: "User",
+      hooks: {
+        async beforeCreate(user) {
+          if (user.password) {
+            user.password = await bcrypt.hash(user.password, 10);
+          }
+        },
+
+        async beforeUpdate(user) {
+          if (user.changed("password")) {
+            user.password = await bcrypt.hash(user.password, 10);
+          }
+        },
+      },
     },
   );
+
+  User.prototype.comparePassword = async function (password) {
+    return bcrypt.compare(password, this.password);
+  };
 
   return User;
 };
