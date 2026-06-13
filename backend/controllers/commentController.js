@@ -1,21 +1,36 @@
 const commentService = require("../services/commentService");
+const {
+  createCommentSchema,
+} = require("../validations/comment.validation");
 
-exports.addComment = async (req, res) => {
+exports.createComment = async (req, res) => {
   try {
-    const comment = await commentService.createComment({
-      ...req.body,
-      userId: req.user.id,
-    });
+    const { error, value } =
+      createCommentSchema.validate(req.body, {
+        abortEarly: false,
+        stripUnknown: true,
+      });
 
-    res.status(201).json(comment);
-  } catch (error) {
-    if (error.message === "Parent comment not found") {
-      return res.status(404).json({
-        message: error.message,
+    if (error) {
+      return res.status(400).json({
+        errors: error.details.map(
+          (detail) => detail.message
+        ),
       });
     }
 
-    res.status(500).json({
+    const comment =
+      await commentService.createComment({
+        ...value,
+        userId: req.user.id,
+      });
+
+    return res.status(201).json({
+      message: "Comment created successfully",
+      comment,
+    });
+  } catch (error) {
+    return res.status(500).json({
       error: error.message,
     });
   }

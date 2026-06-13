@@ -1,15 +1,37 @@
 const postService = require("../services/postService");
+const {
+  createPostSchema,
+} = require("../validations/post.validation");
 
 exports.createPost = async (req, res) => {
   try {
+    const { error, value } = createPostSchema.validate(
+      req.body,
+      {
+        abortEarly: false,
+        stripUnknown: true,
+      }
+    );
+
+    if (error) {
+      return res.status(400).json({
+        errors: error.details.map(
+          (detail) => detail.message
+        ),
+      });
+    }
+
     const post = await postService.createPost({
-      ...req.body,
+      ...value,
       userId: req.user.id,
     });
 
-    res.status(201).json(post);
+    return res.status(201).json({
+      message: "Post created successfully",
+      post,
+    });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       error: error.message,
     });
   }

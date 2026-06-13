@@ -1,42 +1,65 @@
 const authService = require("../services/authService");
+const {
+  registerSchema,
+  loginSchema,
+} = require("../validations/auth.validation");
 
 exports.register = async (req, res) => {
   try {
-    const user = await authService.registerUser(req.body);
+    const { error, value } = registerSchema.validate(
+      req.body,
+      {
+        abortEarly: false,
+        stripUnknown: true,
+      }
+    );
 
-    res.status(201).json({
-      message: "User registered",
+    if (error) {
+      return res.status(400).json({
+        errors: error.details.map(
+          (detail) => detail.message
+        ),
+      });
+    }
+
+    const user = await authService.registerUser(value);
+
+    return res.status(201).json({
+      message: "User registered successfully",
       user,
     });
   } catch (error) {
-    res.status(400).json({
-      message: error.message,
+    return res.status(500).json({
+      error: error.message,
     });
   }
 };
 
+
 exports.login = async (req, res) => {
   try {
-    const { user, token } = await authService.loginUser(req.body);
+    const { error, value } = loginSchema.validate(
+      req.body,
+      {
+        abortEarly: false,
+        stripUnknown: true,
+      }
+    );
 
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 24 * 60 * 60 * 1000,
-    });
+    if (error) {
+      return res.status(400).json({
+        errors: error.details.map(
+          (detail) => detail.message
+        ),
+      });
+    }
 
-    res.json({
-      message: "Login successful",
-      user: {
-        id: user.id,
-        username: user.username,
-        email: user.email,
-      },
-    });
+    const result = await authService.loginUser(value);
+
+    return res.status(200).json(result);
   } catch (error) {
-    res.status(400).json({
-      message: error.message,
+    return res.status(500).json({
+      error: error.message,
     });
   }
 };

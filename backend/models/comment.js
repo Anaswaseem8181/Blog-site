@@ -3,6 +3,20 @@ module.exports = (sequelize, DataTypes) => {
     text: {
       type: DataTypes.TEXT,
       allowNull: false,
+
+      validate: {
+        notNull: {
+          msg: "Comment text is required",
+        },
+        
+        notEmpty: {
+          msg: "Comment text cannot be empty",
+        },
+        len: {
+          args: [1, 1000],
+          msg: "Comment text must be between 1 and 1000 characters",
+        },
+      },
     },
 
     userId: {

@@ -12,10 +12,10 @@ const registerUser = async ({ username, email, password }) => {
   }
 
   const user = await User.create({
-    username,
-    email,
-    password: hashedPassword,
-  });
+  username,
+  email,
+  password,
+});
 
   return user;
 };
