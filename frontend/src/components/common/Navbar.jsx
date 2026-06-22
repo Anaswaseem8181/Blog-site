@@ -1,6 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import { BookOpen, LogOut, PlusCircle } from 'lucide-react';
 import Container from './Container';
+import Sidebar from './Sidebar';
+import UserDropdown from './UserDropdown';
 
 export default function Navbar({ user, onLogout }) {
   const navigate = useNavigate();
@@ -9,14 +11,17 @@ export default function Navbar({ user, onLogout }) {
     <header className="sticky top-0 z-50 bg-slate-50/80 backdrop-blur-md border-b border-slate-200/60">
       <Container>
         <div className="flex items-center justify-between py-4">
-          <div
-            className="flex items-center gap-2 cursor-pointer group"
-            onClick={() => navigate('/')}
-          >
+          <div className="flex items-center gap-4">
+            <Sidebar user={user} onLogout={onLogout} />
+            <div
+              className="flex items-center gap-2 cursor-pointer group"
+              onClick={() => navigate('/')}
+            >
             <BookOpen className="h-5 w-5 text-slate-700 transition-colors group-hover:text-slate-900" />
             <span className="text-lg font-semibold text-slate-800 tracking-tight">
               Bloger
             </span>
+            </div>
           </div>
 
           <div className="flex items-center gap-4">
@@ -28,16 +33,7 @@ export default function Navbar({ user, onLogout }) {
                 >
                   <PlusCircle className="h-4 w-4" /> Dashboard
                 </button>
-                <div className="hidden sm:block text-right">
-                  <p className="text-sm font-medium text-slate-600">@{user.username || user.email?.split('@')[0] || 'user'}</p>
-                </div>
-                <button
-                  onClick={onLogout}
-                  className="text-slate-500 hover:text-slate-800 p-2 transition-colors rounded-lg hover:bg-slate-100"
-                  title="Logout"
-                >
-                  <LogOut className="h-4.5 w-4.5" />
-                </button>
+                <UserDropdown user={user} onLogout={onLogout} />
               </>
             ) : (
               <button

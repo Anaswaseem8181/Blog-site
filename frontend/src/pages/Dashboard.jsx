@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react';
 import API from '../api/api';
 import { useNavigate } from 'react-router-dom';
 import { PlusCircle, Edit3, Trash2, FileText, CheckCircle, AlertCircle } from 'lucide-react';
-import Container from '../components/Container';
+import Container from '../components/common/Container';
 import useAsync from '../hooks/useAsync';
+
+import EmojiPickerButton from '../components/common/EmojiPickerButton';
 
 export default function Dashboard({ user }) {
   const navigate = useNavigate();
@@ -25,7 +27,7 @@ export default function Dashboard({ user }) {
       return;
     }
     fetchMyPosts();
-  }, [user]);
+  }, [user?.id]); // Use user?.id to prevent infinite loops if the user object reference changes
 
   const fetchMyPosts = async (pageNum = 1, append = false) => {
     const { data } = await executeFetch(() => API.get('/posts/my-posts', { params: { page: pageNum, limit: 9 } }));
@@ -77,7 +79,7 @@ export default function Dashboard({ user }) {
       : () => API.post('/posts', formData);
 
     const { error } = await executeForm(action);
-    
+
     if (!error) {
       setSuccess(editPostId ? 'Article updated successfully.' : 'Article published successfully.');
       setIsEditing(false);
@@ -131,28 +133,45 @@ export default function Dashboard({ user }) {
             {editPostId ? 'Edit Article' : 'Write Article'}
           </h2>
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Title Field */}
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Title</label>
-              <input
-                type="text"
-                required
-                placeholder="Give your article a clear title"
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                className="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200 focus:border-slate-300 transition-all font-medium"
-              />
+              <div className="flex items-center gap-2 w-full bg-white border border-slate-200 rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-slate-200 focus-within:border-slate-300 transition-all">
+                <input
+                  type="text"
+                  required
+                  placeholder="Give your article a clear title"
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  className="flex-1 bg-transparent text-slate-900 placeholder-slate-400 focus:outline-none font-medium text-sm"
+                />
+                <EmojiPickerButton
+                  onEmojiSelect={(emoji) => setFormData({ ...formData, title: formData.title + emoji })}
+                  positionClass="bottom-full mb-2 right-0"
+                />
+              </div>
             </div>
 
+            {/* Content Field */}
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Content</label>
-              <textarea
-                rows="14"
-                required
-                placeholder="Write your story here..."
-                value={formData.content}
-                onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                className="w-full bg-white border border-slate-200 rounded-xl py-3.5 px-4 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200 focus:border-slate-300 transition-all resize-none leading-relaxed"
-              ></textarea>
+              <div className="w-full bg-white border border-slate-200 rounded-xl focus-within:ring-2 focus-within:ring-slate-200 focus-within:border-slate-300 transition-all overflow-hidden">
+                <textarea
+                  rows="14"
+                  required
+                  placeholder="Write your story here..."
+                  value={formData.content}
+                  onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                  className="w-full bg-transparent py-3.5 px-4 text-sm text-slate-800 placeholder-slate-400 focus:outline-none resize-none leading-relaxed"
+                />
+                {/* Bottom toolbar — emoji lives here, matching comment input style */}
+                <div className="flex items-center justify-end px-3 py-1.5 border-t border-slate-100 bg-slate-50/50">
+                  <EmojiPickerButton
+                    onEmojiSelect={(emoji) => setFormData({ ...formData, content: formData.content + emoji })}
+                    positionClass="bottom-full mb-2 right-0"
+                  />
+                </div>
+              </div>
             </div>
 
             <div className="flex gap-3 justify-end pt-4">

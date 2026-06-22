@@ -15,7 +15,8 @@ const createCommentSchema = Joi.object({
   parentCommentId: Joi.number()
     .integer()
     .positive()
-    .optional(),
+    .optional()
+    .allow(null),
 });
 
 module.exports = {

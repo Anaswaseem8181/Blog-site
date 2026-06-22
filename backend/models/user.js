@@ -24,6 +24,12 @@ module.exports = (sequelize, DataTypes) => {
         },
       },
 
+      bio: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        defaultValue: '',
+      },
+
       email: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -65,6 +71,20 @@ module.exports = (sequelize, DataTypes) => {
       },
     },
     {
+      // password har query se hide ho jayega
+      defaultScope: {
+        attributes: {
+          exclude: ["password"],
+        },
+      },
+
+      // login ke liye password wapas lana ho to
+      scopes: {
+        withPassword: {
+          attributes: { include: ["password"] },
+        },
+      },
+
       hooks: {
         async beforeCreate(user) {
           if (user.password) {

@@ -27,3 +27,6 @@ package-lock.json
 
 # Ignore local env
 .env
+DRY-ERROR-HANDLING.md
+commentsFlow.txt
+codebase.txt

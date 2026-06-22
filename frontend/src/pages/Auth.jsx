@@ -1,14 +1,13 @@
 import { useState } from 'react';
-import API from '../api/api';
 import { LogIn, UserPlus, Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
-import useAsync from '../hooks/useAsync';
+import useAuth from '../hooks/useAuth';
 
 export default function Auth({ onAuthSuccess }) {
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({ username: '', email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
 
-  const { loading, error, setError, execute } = useAsync();
+  const { loading, error, setError, login, register } = useAuth();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -18,19 +17,13 @@ export default function Auth({ onAuthSuccess }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (isLogin) {
-      const { data } = await execute(() => API.post('/auth/login', {
-        email: formData.email,
-        password: formData.password,
-      }));
-      if (data) {
-        // Fetch fresh user data from backend (includes username)
-        // Token is now securely stored in an HttpOnly cookie automatically
-        const meRes = await API.get('/auth/me');
-        onAuthSuccess(meRes.data.user);
+      const { user, error } = await login(formData.email, formData.password);
+      if (!error && user) {
+        onAuthSuccess(user);
       }
     } else {
-      const { error: regError } = await execute(() => API.post('/auth/register', formData));
-      if (!regError) {
+      const { error } = await register(formData.username, formData.email, formData.password);
+      if (!error) {
         setIsLogin(true);
         setFormData({ username: '', email: '', password: '' });
         setError('Registration successful! Please login.');

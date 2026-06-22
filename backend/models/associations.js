@@ -21,7 +21,7 @@ module.exports = (models) => {
 
   Comment.belongsTo(User, {
     foreignKey: "userId",
-    as: "user",
+    as: "author",
   });
 
  

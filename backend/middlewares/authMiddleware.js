@@ -4,9 +4,14 @@ module.exports = (req, res, next) => {
   try {
     let token = req.cookies?.token;
 
-    // Fallback to Authorization header if cookies are not set (e.g. for postman or mobile apps)
-    if (!token && req.headers.authorization) {
-      token = req.headers.authorization.split(" ")[1];
+    const authHeader = req.headers.authorization;
+
+    if (!token && authHeader) {
+      const [type, value] = authHeader.split(" ");
+
+      if (type === "Bearer" && value) {
+        token = value;
+      }
     }
 
     if (!token) {

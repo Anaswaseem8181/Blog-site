@@ -1,4 +1,6 @@
 import { useState, useCallback } from 'react';
+import { getErrorMessage } from '../utils/errorHandler';
+
 
 export default function useAsync() {
   const [loading, setLoading] = useState(false);
@@ -11,7 +13,7 @@ export default function useAsync() {
       const response = await asyncFunction();
       return { data: response?.data || response, error: null };
     } catch (err) {
-      const message = err.response?.data?.message || err.response?.data?.error || err.message || 'An error occurred.';
+      const message = getErrorMessage(err);
       setError(message);
       return { data: null, error: message };
     } finally {

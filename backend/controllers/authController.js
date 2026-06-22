@@ -1,89 +1,75 @@
+const asyncHandler = require("../middlewares/asyncHandler");
+const AppError = require("../utils/AppError");
+
 const authService = require("../services/authService");
 const {
   registerSchema,
   loginSchema,
 } = require("../validations/auth.validation");
 
-exports.register = async (req, res) => {
-  try {
-    const { error, value } = registerSchema.validate(
-      req.body,
-      {
-        abortEarly: false,
-        stripUnknown: true,
-      }
+exports.register = asyncHandler(async (req, res) => {
+  const { error, value } = registerSchema.validate(req.body, {
+    abortEarly: false,
+    stripUnknown: true,
+  });
+
+  if (error) {
+    throw new AppError(
+      error.details.map((d) => d.message).join(", "),
+      400
     );
-
-    if (error) {
-      return res.status(400).json({
-        errors: error.details.map(
-          (detail) => detail.message
-        ),
-      });
-    }
-
-    const user = await authService.registerUser(value);
-
-    return res.status(201).json({
-      message: "User registered successfully",
-      user,
-    });
-  } catch (error) {
-    return res.status(500).json({
-      error: error.message,
-    });
   }
-};
 
+  const user = await authService.registerUser(value);
 
-exports.login = async (req, res) => {
-  try {
-    const { error, value } = loginSchema.validate(
-      req.body,
-      {
-        abortEarly: false,
-        stripUnknown: true,
-      }
+  res.status(201).json({
+    message: "User registered successfully",
+    user,
+  });
+});
+
+exports.login = asyncHandler(async (req, res) => {
+  const { error, value } = loginSchema.validate(req.body, {
+    abortEarly: false,
+    stripUnknown: true,
+  });
+
+  if (error) {
+    throw new AppError(
+      error.details.map((d) => d.message).join(", "),
+      400
     );
-
-    if (error) {
-      return res.status(400).json({
-        errors: error.details.map(
-          (detail) => detail.message
-        ),
-      });
-    }
-
-    const result = await authService.loginUser(value);
-
-    return res.status(200).json(result);
-  } catch (error) {
-    return res.status(500).json({
-      error: error.message,
-    });
   }
-};
 
-exports.logout = (req, res) => {
+ const result = await authService.loginUser(value);
+
+res.cookie("token", result.accessToken, {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "strict",
+  maxAge: 24 * 60 * 60 * 1000, // 1 day
+});
+
+res.status(200).json({
+  message: "Login successful",
+  user: result.user,
+});
+});
+
+exports.logout = asyncHandler(async (req, res) => {
   res.clearCookie("token", {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "strict",
   });
 
-  res.json({
+  res.status(200).json({
     message: "Logout successful",
   });
-};
+});
 
-exports.getMe = async (req, res) => {
-  try {
-    const user = await authService.getUserById(req.user.id);
+exports.getMe = asyncHandler(async (req, res) => {
+   const user = await authService.getUserById(req.user.id);
 
-    res.json({ user });
-  } catch (error) {
-    res.status(404).json({
-      message: error.message,
-    });
-  }
-};
+  res.json({ user });
+});

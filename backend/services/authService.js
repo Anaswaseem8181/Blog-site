@@ -1,6 +1,7 @@
 const { User } = require("../models");
-const bcrypt = require("bcryptjs");
 const generateToken = require("../utils/generateToken");
+const AppError = require("../utils/AppError");
+const serializeUser = require("../utils/serializeUser");
 
 const registerUser = async ({ username, email, password }) => {
   const existingUser = await User.findOne({
@@ -8,7 +9,7 @@ const registerUser = async ({ username, email, password }) => {
   });
 
   if (existingUser) {
-    throw new Error("Email already exists");
+    throw new AppError("Email already exists", 409);
   }
 
   const user = await User.create({
@@ -17,22 +18,22 @@ const registerUser = async ({ username, email, password }) => {
   password,
 });
 
-  return user;
+  return serializeUser(user);
 };
 
 const loginUser = async ({ email, password }) => {
-  const user = await User.findOne({
-    where: { email },
-  });
+  const user = await User.scope("withPassword").findOne({
+  where: { email },
+});
 
   if (!user) {
-    throw new Error("User not found");
+    throw new AppError("User not found", 404);
   }
 
   const isMatch = await user.comparePassword(password);
 
   if (!isMatch) {
-    throw new Error("Invalid credentials");
+    throw new AppError("Invalid credentials", 401);
   }
 
   const accessToken = generateToken(
@@ -43,30 +44,20 @@ const loginUser = async ({ email, password }) => {
     "1d",
   );
 
-  const refreshToken = generateToken(
-    {
-      id: user.id,
-    },
-    "30d",
-  );
-
   return {
-    user,
+    user: serializeUser(user),
     accessToken,
-    refreshToken,
   };
 };
 
 const getUserById = async (id) => {
-  const user = await User.findByPk(id, {
-    attributes: ["id", "username", "email", "createdAt"],
-  });
+  const user = await User.findByPk(id);
 
   if (!user) {
-    throw new Error("User not found");
+    throw new AppError("User not found", 404);
   }
 
-  return user;
+  return serializeUser(user);
 };
 
 module.exports = {

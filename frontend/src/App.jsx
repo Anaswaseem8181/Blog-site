@@ -1,41 +1,53 @@
-import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import Auth from './pages/Auth';
-import Home from './pages/Home';
-import PostDetails from './pages/PostDetails';
-import Dashboard from './pages/Dashboard';
-import API from './api/api';
-import Loader from './components/Loader';
-import Layout from './components/Layout';
+import { useState, useEffect } from "react";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+
+import API from "./api/api";
+
+import Home from "./pages/Home";
+import Auth from "./pages/Auth";
+import Dashboard from "./pages/Dashboard";
+import PostDetails from "./pages/PostDetails";
+import UserProfile from "./pages/UserProfile";
+
+import Layout from "./components/common/Layout";
+import Loader from "./components/common/Loader";
+
+import ProtectedRoute from "./routes/ProtectedRoute";
+import GuestRoute from "./routes/GuestRoute";
 
 export default function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // On app load, check if the user is authenticated via HttpOnly cookie
   useEffect(() => {
-    API.get('/auth/me')
-      .then((res) => {
-        setUser(res.data.user);
-      })
-      .catch(() => {
-        // No valid cookie, user is not logged in
+    const loadUser = async () => {
+      try {
+        const { data } = await API.get("/auth/me");
+        setUser(data.user);
+      } catch (error) {
         setUser(null);
-      })
-      .finally(() => {
+      } finally {
         setLoading(false);
-      });
+      }
+    };
+
+    loadUser();
   }, []);
 
-  const handleAuthSuccess = (user) => {
-    setUser(user);
+  const handleAuthSuccess = (userData) => {
+    setUser(userData);
   };
 
   const handleLogout = async () => {
     try {
-      await API.post('/auth/logout');
-    } catch (err) {
-      console.error('Logout failed', err);
+      await API.post("/auth/logout");
+    } catch (error) {
+      console.error("Logout failed:", error);
     } finally {
       setUser(null);
     }
@@ -48,41 +60,68 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route 
-          path="/" 
+        {/* Routes with Layout */}
+        <Route
           element={
-            <Layout user={user} onLogout={handleLogout}>
-              <Home />
-            </Layout>
-          } 
-        />
-        <Route 
-          path="/posts/:id" 
-          element={
-            <Layout user={user} onLogout={handleLogout}>
+            <Layout
+              user={user}
+              onLogout={handleLogout}
+            />
+          }
+        >
+          <Route
+            index
+            element={<Home />}
+          />
+
+          <Route
+            path="posts/:id"
+            element={
               <PostDetails user={user} />
-            </Layout>
-          } 
-        />
-        <Route 
-          path="/dashboard" 
-          element={
-            user ? (
-              <Layout user={user} onLogout={handleLogout}>
+            }
+          />
+
+          <Route
+            path="dashboard"
+            element={
+              <ProtectedRoute user={user}>
                 <Dashboard user={user} />
-              </Layout>
-            ) : <Navigate to="/auth" replace />
-          } 
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="profile/:username"
+            element={
+              <UserProfile user={user} />
+            }
+          />
+        </Route>
+
+        {/* Auth Route */}
+        <Route
+          path="/auth"
+          element={
+            <GuestRoute user={user}>
+              <Auth
+                onAuthSuccess={
+                  handleAuthSuccess
+                }
+              />
+            </GuestRoute>
+          }
         />
 
-        <Route 
-          path="/auth" 
+        {/* 404 Redirect */}
+        <Route
+          path="*"
           element={
-            user ? <Navigate to="/" replace /> : <Auth onAuthSuccess={handleAuthSuccess} />
-          } 
+            <Navigate
+              to="/"
+              replace
+            />
+          }
         />
-        
-        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );

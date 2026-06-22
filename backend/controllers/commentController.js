@@ -1,64 +1,54 @@
+const asyncHandler = require("../middlewares/asyncHandler");
+const AppError = require("../utils/AppError");
+
 const commentService = require("../services/commentService");
 const {
   createCommentSchema,
 } = require("../validations/comment.validation");
 
-exports.createComment = async (req, res) => {
-  try {
-    const { error, value } =
-      createCommentSchema.validate(req.body, {
-        abortEarly: false,
-        stripUnknown: true,
-      });
+exports.createComment =asyncHandler(async (req, res) => {
+   const { error, value } = createCommentSchema.validate(req.body, {
+    abortEarly: false,
+    stripUnknown: true,
+  });
 
-    if (error) {
-      return res.status(400).json({
-        errors: error.details.map(
-          (detail) => detail.message
-        ),
-      });
-    }
-
-    const comment =
-      await commentService.createComment({
-        ...value,
-        userId: req.user.id,
-      });
-
-    return res.status(201).json({
-      message: "Comment created successfully",
-      comment,
-    });
-  } catch (error) {
-    return res.status(500).json({
-      error: error.message,
-    });
-  }
-};
-
-exports.deleteComment = async (req, res) => {
-  try {
-    const result = await commentService.removeComment(
-      req.params.id,
-      req.user.id
+  if (error) {
+    throw new AppError(
+      error.details.map((d) => d.message).join(", "),
+      400
     );
-
-    res.json(result);
-  } catch (error) {
-    if (error.message === "Comment not found") {
-      return res.status(404).json({
-        message: error.message,
-      });
-    }
-
-    if (error.message === "Unauthorized") {
-      return res.status(403).json({
-        message: error.message,
-      });
-    }
-
-    res.status(500).json({
-      error: error.message,
-    });
   }
-};
+
+  const comment = await commentService.createComment({
+    ...value,
+    userId: req.user.id,
+  });
+
+  res.status(201).json({
+    message: "Comment created successfully",
+    comment,
+  });
+});
+
+exports.deleteComment = asyncHandler(async (req, res) => {
+  const result = await commentService.removeComment(
+    req.params.id,
+    req.user.id
+  );
+
+  res.json(result);
+});
+
+exports.getReplies = asyncHandler(async (req, res) => {
+  const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
+  const limit = parseInt(req.query.limit, 10) || 10;
+  const offset = parseInt(req.query.offset, 10);
+
+  const result = await commentService.getRepliesForComment(req.params.parentCommentId, {
+    page,
+    limit,
+    offset: !isNaN(offset) ? offset : undefined,
+  });
+
+  res.json(result);
+});

@@ -3,12 +3,15 @@ const router = require("express").Router();
 const authMiddleware = require("../middlewares/authMiddleware");
 
 const {
-  addComment,
+  createComment,
   deleteComment,
+  getReplies,
 } = require("../controllers/commentController");
 
-router.post("/", authMiddleware, addComment);
+router.post("/", authMiddleware, createComment);
 
 router.delete("/:id", authMiddleware, deleteComment);
+
+router.get("/:parentCommentId/replies", getReplies);
 
 module.exports = router;

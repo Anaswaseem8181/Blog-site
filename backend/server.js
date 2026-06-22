@@ -4,21 +4,33 @@ const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const app = express();
+const errorHandler = require("./middlewares/errorHandler");
+const helmet = require("helmet");
+
+app.use(helmet());
 
 app.use(cors({
   origin: process.env.FRONTEND_URL || "http://localhost:5173",
   credentials: true
 }));
+
 app.use(express.json());
+
+app.use(express.urlencoded({ extended: true }));
+
 app.use(cookieParser());
 
 const authRoutes = require("./routes/authRoutes");
 const postRoutes = require("./routes/postRoutes");
 const commentRoutes = require("./routes/commentRoutes");
+const userRoutes = require("./routes/userRoutes");
 
 app.use("/api/auth", authRoutes);
 app.use("/api/posts", postRoutes);
 app.use("/api/comments", commentRoutes);
+app.use("/api/users", userRoutes);
+
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
