@@ -11,7 +11,7 @@ exports.getPublicProfile = async (username) => {
           Sequelize.literal(`(
             SELECT COUNT(*)::int
             FROM "Posts"
-            WHERE "Posts"."userId" = "User"."id"
+            WHERE "Posts"."userId" = "User"."id" AND "Posts"."status" = 'published'
           )`),
           "postsCount",
         ],
@@ -56,7 +56,8 @@ exports.updateProfile = async (userId, updateData) => {
 
   await user.update({
     username: updateData.username !== undefined ? updateData.username : user.username,
-    bio: updateData.bio !== undefined ? updateData.bio : user.bio
+    bio: updateData.bio !== undefined ? updateData.bio : user.bio,
+    avatarUrl: updateData.avatarUrl !== undefined ? updateData.avatarUrl : user.avatarUrl
   });
 
   return user;
@@ -72,7 +73,7 @@ exports.getUserPosts = async (username, page = 1, limit = 9) => {
   }
 
   const posts = await Post.findAll({
-    where: { userId: user.id },
+    where: { userId: user.id, status: 'published' },
     limit: limit + 1,
     offset,
     attributes: {
@@ -91,7 +92,7 @@ exports.getUserPosts = async (username, page = 1, limit = 9) => {
       {
         model: User,
         as: "author",
-        attributes: ["id", "username"],
+        attributes: ["id", "username", "avatarUrl"],
       },
     ],
     order: [["createdAt", "DESC"]],

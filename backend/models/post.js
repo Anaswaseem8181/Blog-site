@@ -40,6 +40,17 @@ module.exports = (sequelize, DataTypes) => {
       },
     },
 
+    coverImage: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+
+    status: {
+      type: DataTypes.ENUM('draft', 'published'),
+      allowNull: false,
+      defaultValue: 'published',
+    },
+
       userId: {
       type: DataTypes.INTEGER,
       allowNull: false,

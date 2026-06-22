@@ -7,7 +7,7 @@ import useAsync from "./useAsync";
 export default function useDashboardForm(onSuccess) {
   const [isEditing, setIsEditing] = useState(false);
   const [editPostId, setEditPostId] = useState(null);
-  const [formData, setFormData] = useState({ title: "", content: "" });
+  const [formData, setFormData] = useState({ title: "", content: "", coverImage: null, status: "published", tags: [] });
   const [success, setSuccess] = useState("");
   const {
     loading: formLoading,
@@ -20,7 +20,7 @@ export default function useDashboardForm(onSuccess) {
   const openCreateForm = useCallback(() => {
     setIsEditing(true);
     setEditPostId(null);
-    setFormData({ title: "", content: "" });
+    setFormData({ title: "", content: "", coverImage: null, status: "published", tags: [] });
     setSuccess("");
     setFormError("");
   }, [setFormError]);
@@ -30,7 +30,13 @@ export default function useDashboardForm(onSuccess) {
     (post) => {
       setIsEditing(true);
       setEditPostId(post.id);
-      setFormData({ title: post.title, content: post.content });
+      setFormData({ 
+        title: post.title, 
+        content: post.content,
+        coverImage: post.coverImage || null,
+        status: post.status || "published",
+        tags: post.tags ? post.tags.map(t => t.name) : []
+      });
       setSuccess("");
       setFormError("");
     },
@@ -41,7 +47,7 @@ export default function useDashboardForm(onSuccess) {
   const closeForm = useCallback(() => {
     setIsEditing(false);
     setEditPostId(null);
-    setFormData({ title: "", content: "" });
+    setFormData({ title: "", content: "", coverImage: null, status: "published", tags: [] });
   }, []);
 
   // Update form field value
@@ -51,14 +57,19 @@ export default function useDashboardForm(onSuccess) {
 
   // Submit form (create or update)
   const submitForm = useCallback(
-    async (e) => {
+    async (e, explicitStatus) => {
       e.preventDefault();
       if (!formData.title.trim() || !formData.content.trim()) return;
       setSuccess("");
 
+      const payload = { ...formData };
+      if (explicitStatus) {
+        payload.status = explicitStatus;
+      }
+
       const action = editPostId
-        ? () => API.put(`/posts/${editPostId}`, formData)
-        : () => API.post("/posts", formData);
+        ? () => API.put(`/posts/${editPostId}`, payload)
+        : () => API.post("/posts", payload);
 
       const { error } = await executeForm(action);
 

@@ -6,6 +6,7 @@ const AppError = require("../utils/AppError");
 const updateProfileSchema = Joi.object({
   username: Joi.string().min(3).max(50).optional(),
   bio: Joi.string().allow("").max(500).optional(),
+  avatarUrl: Joi.string().uri().allow(null, "").optional(),
 });
 
 exports.getProfile = asyncHandler(async (req, res) => {

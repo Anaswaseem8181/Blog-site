@@ -36,12 +36,20 @@ export default function UserDropdown({ user, onLogout }) {
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2 px-2 py-1.5 rounded-xl hover:bg-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-200"
       >
-        <div 
-          className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold"
-          style={getAvatarStyle(username)}
-        >
-          {getInitials(username)}
-        </div>
+        {user?.avatarUrl ? (
+          <img 
+            src={user.avatarUrl} 
+            alt={username} 
+            className="w-7 h-7 rounded-full object-cover"
+          />
+        ) : (
+          <div 
+            className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold"
+            style={getAvatarStyle(username)}
+          >
+            {getInitials(username)}
+          </div>
+        )}
         <span className="text-sm font-medium text-slate-700 hidden sm:block">
           @{username}
         </span>

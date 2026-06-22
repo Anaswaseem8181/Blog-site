@@ -1,6 +1,7 @@
 const router = require("express").Router();
 
 const authMiddleware = require("../middlewares/authMiddleware");
+const { optionalAuth } = require("../middlewares/authMiddleware");
 
 const {
   createPost,
@@ -13,11 +14,11 @@ const {
 
 router.post("/", authMiddleware, createPost);
 
-router.get("/", getPosts);
+router.get("/", optionalAuth, getPosts);
 
 router.get("/my-posts", authMiddleware, getMyPosts);
 
-router.get("/:id", getPostById);
+router.get("/:id", optionalAuth, getPostById);
 
 router.put("/:id", authMiddleware, updatePost);
 

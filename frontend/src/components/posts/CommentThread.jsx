@@ -62,6 +62,7 @@ const CommentThread = memo(function CommentThread({
 
   const isOwner = user && comment.author?.id === user.id;
   const username = comment.author?.username ?? 'anonymous';
+  const avatarUrl = comment.author?.avatarUrl ?? null;
   const replyCount = localReplies.length;
 
   const navigateToProfile = () => {
@@ -75,7 +76,7 @@ const CommentThread = memo(function CommentThread({
       {/* Left: Avatar */}
       <div className="flex flex-col items-center">
         <div onClick={navigateToProfile} className="cursor-pointer hover:opacity-80 transition-opacity">
-          <Avatar username={username} />
+          <Avatar username={username} avatarUrl={avatarUrl} />
         </div>
         {/* Vertical thread line (shows when replies are expanded) */}
         {showReplies && replyCount > 0 && (
@@ -96,8 +97,9 @@ const CommentThread = memo(function CommentThread({
           <CommentText text={comment.text} />
         </div>
 
-        {/* Meta row: time · Reply · Delete */}
+        {/* Meta row: time · Like · Reply · Delete */}
         <CommentActions
+          commentId={comment.id}
           createdAt={comment.createdAt}
           showReply={!!user}
           showDelete={isOwner}
@@ -106,6 +108,9 @@ const CommentThread = memo(function CommentThread({
           loading={loading}
           replyAriaExpanded={isReplyingToRoot}
           replyAriaControls={`reply-form-${comment.id}`}
+          initialIsLiked={comment.isLiked}
+          initialLikesCount={comment.likesCount}
+          isAuthenticated={!!user}
         />
 
         {/* Reply input for this root comment */}

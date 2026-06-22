@@ -16,12 +16,20 @@ export default function ProfileHeader({ profileData, isOwnProfile, onEditClick }
 
       <div className="relative z-10 flex flex-col items-center">
         {/* Large Avatar */}
-        <div
-          className="w-24 h-24 sm:w-32 sm:h-32 rounded-full flex items-center justify-center text-white text-3xl sm:text-4xl font-bold select-none border-4 border-white shadow-md mb-6"
-          style={getAvatarStyle(profileData.username)}
-        >
-          {getInitials(profileData.username)}
-        </div>
+        {profileData.avatarUrl ? (
+          <img 
+            src={profileData.avatarUrl} 
+            alt={profileData.username} 
+            className="w-24 h-24 sm:w-32 sm:h-32 rounded-full object-cover border-4 border-white shadow-md mb-6"
+          />
+        ) : (
+          <div
+            className="w-24 h-24 sm:w-32 sm:h-32 rounded-full flex items-center justify-center text-white text-3xl sm:text-4xl font-bold select-none border-4 border-white shadow-md mb-6"
+            style={getAvatarStyle(profileData.username)}
+          >
+            {getInitials(profileData.username)}
+          </div>
+        )}
 
         <h1 className="text-3xl font-bold text-slate-900 mb-2 tracking-tight">
           @{profileData.username}

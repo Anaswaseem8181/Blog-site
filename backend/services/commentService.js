@@ -47,7 +47,7 @@ const getRepliesForComment = async (parentCommentId, { page = 1, limit = 10, off
       {
         model: User,
         as: "author",
-        attributes: ["id", "username"],
+        attributes: ["id", "username", "avatarUrl"],
       },
     ],
     limit: limit + 1,

@@ -6,6 +6,7 @@ import Loader from '../components/common/Loader';
 import PostDetailsHeader from '../components/posts/PostDetailsHeader';
 import PostDetailsContent from '../components/posts/PostDetailsContent';
 import CommentSection from '../components/posts/CommentSection';
+import PostDetailsSkeleton from '../components/posts/PostDetailsSkeleton';
 import usePostDetails from '../hooks/usePostDetails';
 import usePostComments from '../hooks/usePostComments';
 
@@ -23,7 +24,7 @@ export default function PostDetails({ user }) {
     await postComments.addRootComment(postComments.newCommentText);
   }, [postComments]);
 
-  if (postDetails.fetchLoading) return <Loader fullScreen />;
+  if (postDetails.fetchLoading) return <PostDetailsSkeleton />;
 
   if (postDetails.fetchError || !postDetails.post) {
     return (
@@ -57,9 +58,33 @@ export default function PostDetails({ user }) {
       </div>
 
       {/* Post Article */}
-      <article className="bg-white border border-slate-200 rounded-3xl p-8 sm:p-12 mb-10 shadow-sm">
-        <PostDetailsHeader post={post} />
-        <PostDetailsContent content={post.content} />
+      <article className="bg-white border border-slate-200 rounded-3xl overflow-hidden mb-10 shadow-sm">
+        {post.coverImage && (
+          <div className="w-full h-64 sm:h-96 relative bg-slate-100">
+            <img 
+              src={post.coverImage} 
+              alt={post.title} 
+              className="w-full h-full object-cover"
+            />
+          </div>
+        )}
+        <div className="p-8 sm:p-12">
+          <PostDetailsHeader post={post} currentUser={user} />
+          <PostDetailsContent content={post.content} />
+          
+          {post.tags && post.tags.length > 0 && (
+            <div className="mt-10 pt-8 border-t border-slate-100">
+              <h4 className="text-sm font-medium text-slate-500 mb-4 uppercase tracking-wider">Tags</h4>
+              <div className="flex flex-wrap gap-2">
+                {post.tags.map(tag => (
+                  <span key={tag.id} className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors cursor-pointer" onClick={() => navigate(`/?tag=${tag.name}`)}>
+                    #{tag.name}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       </article>
 
       {/* Comments */}

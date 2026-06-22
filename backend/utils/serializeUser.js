@@ -5,6 +5,7 @@ const serializeUser = (user) => {
     id: data.id,
     username: data.username,
     email: data.email,
+    avatarUrl: data.avatarUrl || null,
     createdAt: data.createdAt,
     updatedAt: data.updatedAt,
   };

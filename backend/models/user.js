@@ -30,6 +30,11 @@ module.exports = (sequelize, DataTypes) => {
         defaultValue: '',
       },
 
+      avatarUrl: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+
       email: {
         type: DataTypes.STRING,
         allowNull: false,

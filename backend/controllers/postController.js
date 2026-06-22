@@ -34,8 +34,10 @@ exports.createPost = asyncHandler(async (req, res) => {
 exports.getPosts = asyncHandler(async (req, res) => {
   const result = await postService.getAllPosts({
     search: req.query.search,
+    tag: req.query.tag,
     page: Math.max(parseInt(req.query.page, 10) || 1, 1),
     limit: parseInt(req.query.limit, 10) || 9,
+    requestUserId: req.user?.id || null,  // optional – public route uses optional auth
   });
 
   res.json(result);
@@ -52,7 +54,7 @@ exports.getMyPosts = asyncHandler(async (req, res) => {
 });
 
 exports.getPostById = asyncHandler(async (req, res) => {
-  const post = await postService.getPostById(req.params.id);
+  const post = await postService.getPostById(req.params.id, req.user?.id || null);
   res.json(post);
 });
 

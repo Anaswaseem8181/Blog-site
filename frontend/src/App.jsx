@@ -71,7 +71,7 @@ export default function App() {
         >
           <Route
             index
-            element={<Home />}
+            element={<Home user={user} />}
           />
 
           <Route

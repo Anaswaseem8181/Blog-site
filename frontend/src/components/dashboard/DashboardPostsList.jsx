@@ -36,10 +36,15 @@ export default function DashboardPostsList({
               className="flex-1 cursor-pointer"
               onClick={() => navigate(`/posts/${post.id}`)}
             >
-              <h3 className="text-lg font-medium text-slate-900 hover:text-slate-600 transition-colors line-clamp-1 mb-1">
+              <h3 className="text-lg font-medium text-slate-900 hover:text-slate-600 transition-colors line-clamp-1 mb-1 flex items-center gap-2">
                 {post.title}
+                {post.status === 'draft' && (
+                  <span className="inline-flex items-center rounded-md bg-yellow-50 px-2 py-1 text-xs font-medium text-yellow-800 ring-1 ring-inset ring-yellow-600/20">
+                    Draft
+                  </span>
+                )}
               </h3>
-              <p className="text-sm text-slate-500">
+              <p className="text-sm text-slate-500 mb-2">
                 Published on{" "}
                 {new Date(post.createdAt).toLocaleDateString(undefined, {
                   year: "numeric",
@@ -47,6 +52,15 @@ export default function DashboardPostsList({
                   day: "numeric",
                 })}
               </p>
+              {post.tags && post.tags.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-1">
+                  {post.tags.map(tag => (
+                    <span key={tag.id} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700">
+                      #{tag.name}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="flex items-center gap-2 w-full sm:w-auto justify-end pt-2 sm:pt-0">

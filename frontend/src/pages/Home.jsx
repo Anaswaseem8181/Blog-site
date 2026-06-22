@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Container from '../components/common/Container';
 import Loader from '../components/common/Loader';
 import HomeSearch from '../components/home/HomeSearch';
@@ -7,21 +7,23 @@ import HomeEmptyState from '../components/home/HomeEmptyState';
 import useHomeSearch from '../hooks/useHomeSearch';
 import useDebounce from '../hooks/useDebounce';
 
-export default function Home() {
+export default function Home({ user }) {
   const [searchTerm, setSearchTerm] = useState('');
+  const [tagTerm, setTagTerm] = useState('');
   const homeSearch = useHomeSearch();
   const debouncedSearch = useDebounce(searchTerm, 500);
+  const debouncedTag = useDebounce(tagTerm, 500);
 
-  // Re-fetch posts when search term changes
+  // Re-fetch posts when search term or tag term changes
   useEffect(() => {
     homeSearch.setPage(1);
-    homeSearch.fetchPosts(debouncedSearch, 1, false);
-  }, [debouncedSearch]);
+    homeSearch.fetchPosts(debouncedSearch, debouncedTag, 1, false);
+  }, [debouncedSearch, debouncedTag]);
 
 
-  const handleLoadMore = () => {
-    homeSearch.loadMore(homeSearch.page, debouncedSearch);
-  };
+  const handleLoadMore = useCallback(() => {
+    homeSearch.loadMore(homeSearch.page, debouncedSearch, debouncedTag);
+  }, [homeSearch.loadMore, homeSearch.page, debouncedSearch, debouncedTag]);
 
   return (
     <Container>
@@ -35,8 +37,13 @@ export default function Home() {
         </p>
       </div>
 
-      {/* Search */}
-      <HomeSearch value={searchTerm} onChange={setSearchTerm} />
+      {/* Search & Filter */}
+      <HomeSearch 
+        searchValue={searchTerm} 
+        onSearchChange={setSearchTerm} 
+        tagValue={tagTerm}
+        onTagChange={setTagTerm}
+      />
 
       {/* Error Message */}
       {homeSearch.error && (
@@ -45,17 +52,17 @@ export default function Home() {
         </div>
       )}
 
-      {/* Loading */}
-      {homeSearch.loading && homeSearch.posts.length === 0 ? (
-        <Loader />
-      ) : homeSearch.posts.length > 0 ? (
-        <HomePostsGrid
-          posts={homeSearch.posts}
-          hasMore={homeSearch.hasMore}
-          loading={homeSearch.loading}
-          onLoadMore={handleLoadMore}
-        />
-      ) : (
+      {/* Loading & Grid */}
+      <HomePostsGrid
+        posts={homeSearch.posts}
+        hasMore={homeSearch.hasMore}
+        loading={homeSearch.loading}
+        onLoadMore={handleLoadMore}
+        user={user}
+        isInitialLoad={homeSearch.loading && homeSearch.posts.length === 0}
+      />
+      
+      {!homeSearch.loading && homeSearch.posts.length === 0 && (
         <HomeEmptyState searchTerm={searchTerm} />
       )}
     </Container>

@@ -42,13 +42,21 @@ export default function CommentInput({ user, value, onChange, onSubmit, loading,
   return (
     <form onSubmit={onSubmit} className="flex items-center gap-3 py-3 mb-1">
       {/* User Avatar */}
-      <div
-        className="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-white text-xs font-bold select-none"
-        style={getAvatarStyle(user.username)}
-        aria-hidden="true"
-      >
-        {getInitials(user.username)}
-      </div>
+      {user.avatarUrl ? (
+        <img 
+          src={user.avatarUrl} 
+          alt={user.username} 
+          className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+        />
+      ) : (
+        <div
+          className="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-white text-xs font-bold select-none"
+          style={getAvatarStyle(user.username)}
+          aria-hidden="true"
+        >
+          {getInitials(user.username)}
+        </div>
+      )}
 
       {/* Input + Send */}
       <div className="flex-1 flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-full px-4 py-1.5 focus-within:border-slate-400 transition-colors">
